@@ -34,5 +34,5 @@ public class ReservationGetterDAO {
 		return new ReservationStatusBean(status, rs.getString("confirmationcode"), rs.getInt("queuenumber"));
 	}
 
-	private static final String getQuery = "select * from rrs_db.reservation where confirmationcode = ?";
+	private static final String getQuery = "select * from rrs_db.reservation where confirmationcode = ? and cancelled = 0";
 }

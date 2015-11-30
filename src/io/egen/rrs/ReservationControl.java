@@ -7,9 +7,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.egen.beans.ReservationBean;
+import io.egen.beans.ResponseBean;
 import io.egen.dao.ReservationCancellationDAO;
 import io.egen.dao.ReservationDAO;
 import io.egen.dao.ReservationGetterDAO;
@@ -28,19 +27,19 @@ public class ReservationControl {
 	@Path("create")
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Create Reservation", notes = " Create Reservation for a customer/Owner")
+	@ApiOperation(value = "Create Reservation", notes = " Create Reservation for a customer. Date MM-dd-yyyy eg:01-01-2016,"
+			+ "Time format is h:mm a. eg: 10:10 AM")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Success"),
 			@ApiResponse(code = 400, message = "Bad Request"),
 			@ApiResponse(code = 500, message = "Internal Service Error") })
-	public String create(@QueryParam("date") String date, @QueryParam("time") String time,
+	public ReservationBean create(@QueryParam("date") String date, @QueryParam("time") String time,
 			@QueryParam("partySize") String partySize, @QueryParam("contactNumber") String contactNumber) {
 		try {
-			ReservationBean reservationStatus = new ReservationDAO().create(date, time, partySize, contactNumber);
-			return new ObjectMapper().writeValueAsString(reservationStatus);
-		} catch (DAOException | JsonProcessingException e) {
+			return new ReservationDAO().create(date, time, partySize, contactNumber);
+		} catch (DAOException e) {
 			e.printStackTrace();
 		}
-		return "Error";
+		return null;
 	}
 
 	/**
@@ -49,7 +48,8 @@ public class ReservationControl {
 	@Path("edit")
 	@PUT
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Edit Reservation", notes = " Update/Edit a Reservation Detail")
+	@ApiOperation(value = "Edit Reservation", notes = " Update/Edit a Reservation Detail. Date MM-dd-yyyy eg:01-01-2016,"
+			+ "Time format is h:mm a. eg: 10:10 AM")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Success"),
 			@ApiResponse(code = 400, message = "Bad Request"),
 			@ApiResponse(code = 404, message = "Not Found"),
@@ -75,14 +75,14 @@ public class ReservationControl {
 			@ApiResponse(code = 400, message = "Bad Request"),
 			@ApiResponse(code = 404, message = "Not Found"),
 			@ApiResponse(code = 500, message = "Internal Service Error") })
-	public String cancel(@QueryParam("confirmationcode") String confirmationCode) {
+	public ResponseBean cancel(@QueryParam("confirmationcode") String confirmationCode) {
 		try {
 			new ReservationCancellationDAO().cancel(confirmationCode);
-			return "Success";
+			return new ResponseBean("Success");
 		} catch (DAOException e) {
 			e.printStackTrace();
 		}
-		return "Error";
+		return new ResponseBean("Failure");
 	}
 
 	@Path("reservation/{confirmationcode}")

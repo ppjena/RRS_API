@@ -8,11 +8,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.egen.beans.OwnerBean;
 import io.egen.beans.ProfileBean;
 import io.egen.beans.ReservationBean;
+import io.egen.beans.ResponseBean;
 import io.egen.beans.TableBean;
 import io.egen.dao.owner.ContactListDAO;
 import io.egen.dao.owner.LoginDAO;
@@ -39,14 +38,13 @@ public class OwnerControl {
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Success"),
 			@ApiResponse(code = 400, message = "Bad Request"),
 			@ApiResponse(code = 500, message = "Internal Service Error") })
-	public String login(@QueryParam("username") String username, @QueryParam("password") String password) {
+	public OwnerBean login(@QueryParam("username") String username, @QueryParam("password") String password) {
 		try {
-			OwnerBean ownerBean = new LoginDAO().login(username, password);
-			return new ObjectMapper().writeValueAsString(ownerBean);
-		} catch (JsonProcessingException | DAOException e) {
+			return new LoginDAO().login(username, password);
+		} catch (DAOException e) {
 			e.printStackTrace();
 		}
-		return "Error";
+		return null;
 	}
 	
 	/**
@@ -55,18 +53,18 @@ public class OwnerControl {
 	@Path("listReservations/{date}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "View Reservation", notes = "View Reservation List by the Owner for a particular date")
+	@ApiOperation(value = "View Reservation", notes = "View Reservation List by the Owner for a particular date. "
+			+ "Date MM-dd-yyyy eg:01-01-2016")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Success"),
 			@ApiResponse(code = 404, message = "Not Found"),
 			@ApiResponse(code = 500, message = "Internal Service Error") })
-	public String listReservations(@PathParam("date") String date) {
+	public List<ReservationBean> listReservations(@PathParam("date") String date) {
 		try {
-			List<ReservationBean> reservationList = new ReservationListDAO().generateReservationList(date);
-			return new ObjectMapper().writeValueAsString(reservationList);
-		} catch (DAOException | JsonProcessingException e) {
+			return new ReservationListDAO().generateReservationList(date);
+		} catch (DAOException e) {
 			e.printStackTrace();
 		}
-		return "Error";
+		return null;
 	}
 	
 	/**
@@ -79,14 +77,13 @@ public class OwnerControl {
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Success"),
 			@ApiResponse(code = 404, message = "Not Found"),
 			@ApiResponse(code = 500, message = "Internal Service Error") })
-	public String getProfile() {
+	public ProfileBean getProfile() {
 		try {
-			ProfileBean profile = new ProfileDAO().getProfileDetails();
-			return new ObjectMapper().writeValueAsString(profile);
-		} catch (DAOException | JsonProcessingException e) {
+			return new ProfileDAO().getProfileDetails();
+		} catch (DAOException e) {
 			e.printStackTrace();
 		}
-		return "Error";
+		return null;
 	}
 	
 	/**
@@ -100,7 +97,7 @@ public class OwnerControl {
 			@ApiResponse(code = 400, message = "Bad Request"),
 			@ApiResponse(code = 404, message = "Not Found"),
 			@ApiResponse(code = 500, message = "Internal Service Error") })
-	public String editProfile(@QueryParam("name") String name, @QueryParam("contact") String contact,
+	public ResponseBean editProfile(@QueryParam("name") String name, @QueryParam("contact") String contact,
 			@QueryParam("email") String email, @QueryParam("address") String address,
 			@QueryParam("autoAssign") int autoAssign, @QueryParam("opening") String opening,
 			@QueryParam("closing") String closing, @QueryParam("openDays") String openDays) {
@@ -108,11 +105,11 @@ public class OwnerControl {
 			ProfileBean profileBean = new ProfileBean(name, contact, email, address, autoAssign, opening, closing,
 					openDays);
 			new ProfileDAO().updateProfileDetails(profileBean);
-			return "Success";
+			return new ResponseBean("Success");
 		} catch (DAOException e) {
 			e.printStackTrace();
 		}
-		return "Error";
+		return new ResponseBean("Failure");
 	}
 	
 	/**
@@ -125,14 +122,13 @@ public class OwnerControl {
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Success"),
 			@ApiResponse(code = 404, message = "Not Found"),
 			@ApiResponse(code = 500, message = "Internal Service Error") })
-	public String contactList() {
+	public List<String> contactList() {
 		try {
-			List<String> contactList = new ContactListDAO().getContactList();
-			return new ObjectMapper().writeValueAsString(contactList);
-		} catch (DAOException | JsonProcessingException e) {
+			return new ContactListDAO().getContactList();
+		} catch (DAOException e) {
 			e.printStackTrace();
 		}
-		return "Error";
+		return null;
 	}
 	
 	/**
@@ -163,7 +159,8 @@ public class OwnerControl {
 	@Path("tableList/{date}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "View table details", notes = "View list od table details by the owner")
+	@ApiOperation(value = "View table details", notes = "View list od table details by the owner. "
+			+ "Date MM-dd-yyyy eg:01-01-2016")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Success"),
 			@ApiResponse(code = 404, message = "Not Found"),
 			@ApiResponse(code = 500, message = "Internal Service Error") })
@@ -188,14 +185,14 @@ public class OwnerControl {
 			@ApiResponse(code = 400, message = "Bad Request"),
 			@ApiResponse(code = 404, message = "Not Found"),
 			@ApiResponse(code = 500, message = "Internal Service Error") })
-	public String assignTable(@QueryParam("confirmationCode") String confirmationCode,
+	public ResponseBean assignTable(@QueryParam("confirmationCode") String confirmationCode,
 			@QueryParam("tableName") String tableName) {
 		try {
 			new SeatingDAO().updateTable(confirmationCode, tableName);
-			return "SUCCESS";
+			return new ResponseBean("Success");
 		} catch (DAOException e) {
 			e.printStackTrace();
 		}
-		return "FAILURE";
+		return new ResponseBean("Failure");
 	}
 }
