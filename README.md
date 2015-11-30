@@ -1,3 +1,4 @@
-### RRS Project
+### RRS Project( Module-API)
 
-Restaurant Reservations in a web application involving Angular js and REST Api designed for Egen training.
+RRS_API is the backend of the Restaurant Reservation application. RRS_API is a rest-api using jersey and jackson. 
+RRS_API uses mysql as the database for swagger for representation and documentation.
